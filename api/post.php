@@ -3,6 +3,7 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/helpers.php';
+require_once __DIR__ . '/../includes/discord.php';
 
 if (session_status() === PHP_SESSION_NONE) session_start();
 
@@ -46,6 +47,10 @@ if ($action === 'create') {
     $stmt = db()->prepare("INSERT INTO posts (author_id, wall_owner_id, content, image) VALUES (?, ?, ?, ?)");
     $stmt->execute([$me['id'], $wall_owner_id, $content, $image_path]);
     $post_id = (int)db()->lastInsertId();
+
+    // Send to Discord if enabled
+    // require_once __DIR__ . '/../includes/discord.php';
+    send_discord_webhook($wall_owner, $post, $me);
 
     // Fetch full post for response
     $stmt = db()->prepare("
