@@ -38,6 +38,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     wall_permission ENUM('only_me','friends','users','public') NOT NULL DEFAULT 'friends',
                     is_admin TINYINT(1) NOT NULL DEFAULT 0,
                     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+                    discord_webhook_url TEXT DEFAULT NULL,
+                    discord_webhook_enabled TINYINT(1) NOT NULL DEFAULT 0,
+                    discord_posts_today INT NOT NULL DEFAULT 0,
+                    discord_last_reset DATETIME DEFAULT NULL,
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
                 CREATE TABLE IF NOT EXISTS friendships (
