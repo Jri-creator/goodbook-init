@@ -2,6 +2,7 @@
 // upgrade.php — Run this ONCE on existing Goodbook installs to add:
 //   - is_admin column to users table
 //   - mojis table
+//   - discord webhook columns
 // Safe to run multiple times (uses IF NOT EXISTS / IF EXISTS guards).
 // Delete this file when done.
 
@@ -31,10 +32,48 @@ try {
             uploaded_by INT NOT NULL,
             active TINYINT(1) NOT NULL DEFAULT 1,
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE KEY unique_active_name (name, active),
             FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
     ");
     $log[] = '✅ mojis table ready.';
+
+    // Add Discord webhook columns if not present
+    try {
+        db()->exec("ALTER TABLE users ADD COLUMN discord_webhook_url TEXT DEFAULT NULL");
+        $log[] = '✅ Added discord_webhook_url column to users.';
+    } catch (PDOException $e) {
+        if (str_contains($e->getMessage(), 'Duplicate column')) {
+            $log[] = '— discord_webhook_url column already exists, skipped.';
+        } else throw $e;
+    }
+
+    try {
+        db()->exec("ALTER TABLE users ADD COLUMN discord_webhook_enabled TINYINT(1) NOT NULL DEFAULT 0");
+        $log[] = '✅ Added discord_webhook_enabled column to users.';
+    } catch (PDOException $e) {
+        if (str_contains($e->getMessage(), 'Duplicate column')) {
+            $log[] = '— discord_webhook_enabled column already exists, skipped.';
+        } else throw $e;
+    }
+
+    try {
+        db()->exec("ALTER TABLE users ADD COLUMN discord_posts_today INT NOT NULL DEFAULT 0");
+        $log[] = '✅ Added discord_posts_today column to users.';
+    } catch (PDOException $e) {
+        if (str_contains($e->getMessage(), 'Duplicate column')) {
+            $log[] = '— discord_posts_today column already exists, skipped.';
+        } else throw $e;
+    }
+
+    try {
+        db()->exec("ALTER TABLE users ADD COLUMN discord_last_reset DATETIME DEFAULT NULL");
+        $log[] = '✅ Added discord_last_reset column to users.';
+    } catch (PDOException $e) {
+        if (str_contains($e->getMessage(), 'Duplicate column')) {
+            $log[] = '— discord_last_reset column already exists, skipped.';
+        } else throw $e;
+    }
 
     $success = true;
 } catch (PDOException $e) {
@@ -65,8 +104,6 @@ try {
   <?php if ($success ?? false): ?>
     <div class="note">
       ✅ <strong>Upgrade complete.</strong><br><br>
-      To make a user an admin, run this SQL (replace <code>username</code>):<br>
-      <code style="display:block;margin-top:6px;background:#f0f2f5;padding:6px;border-radius:3px;">UPDATE users SET is_admin = 1 WHERE username = 'your_username';</code><br>
       <strong>Delete this file now.</strong> <a href="index.php">← Back to Goodbook</a>
     </div>
   <?php endif; ?>
