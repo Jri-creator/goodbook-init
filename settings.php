@@ -129,6 +129,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </form>
   </div>
 
+    <!-- Discord Webhooks -->
+<div class="card" style="margin-bottom:16px;">
+  <div class="card-title">Discord Webhooks</div>
+  <form method="POST" style="padding:12px;">
+    <input type="hidden" name="action" value="save_discord_webhook">
+    
+    <div class="settings-field">
+      <label>Webhook URL</label>
+      <input type="url" name="discord_webhook_url" 
+             value="<?= h($user['discord_webhook_url'] ?? '') ?>"
+             placeholder="https://discord.com/api/webhooks/...">
+      <div style="font-size:11px;color:#aaa;margin-top:4px;">
+        Get this from Discord Server Settings → Webhooks. Your profile must be public to use this feature.
+      </div>
+    </div>
+    
+    <div class="settings-field">
+      <label style="font-weight:400;display:flex;align-items:center;gap:6px;cursor:pointer;">
+        <input type="checkbox" name="discord_webhook_enabled" 
+               <?= ($user['discord_webhook_enabled'] && $user['profile_public']) ? 'checked' : '' ?>
+               <?= !$user['profile_public'] ? 'disabled' : '' ?>>
+        Send Discord notification when someone posts on my wall
+      </label>
+      <?php if (!$user['profile_public']): ?>
+        <div style="font-size:11px;color:#c00;margin-top:4px;">⚠️ Your profile must be public to enable this feature.</div>
+      <?php endif; ?>
+      <div style="font-size:11px;color:#aaa;margin-top:4px;">Limited to 10 posts per hour.</div>
+    </div>
+    
+    <button type="submit" class="auth-btn" style="width:auto;padding:8px 20px;margin-top:4px;">Save Webhook</button>
+  </form>
+</div>
+
   <!-- Username (read-only display) -->
   <div class="card" style="margin-bottom:16px;">
     <div class="card-title">Account Info</div>
