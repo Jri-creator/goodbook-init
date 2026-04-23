@@ -67,7 +67,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $error = 'Incorrect password — account not deleted.';
         }
+    } elseif ($action === 'save_discord_webhook') {
+    $webhook_url = trim($_POST['discord_webhook_url'] ?? '');
+    $webhook_enabled = isset($_POST['discord_webhook_enabled']) ? 1 : 0;
+    
+    // User must have public profile to use webhooks
+    if ($webhook_enabled && !$user['profile_public']) {
+        $error = 'Your profile must be public to use Discord webhooks.';
+    } elseif ($webhook_url && !validate_discord_webhook_url($webhook_url)) {
+        $error = 'Invalid Discord webhook URL.';
+    } else {
+        db()->prepare("UPDATE users SET discord_webhook_url=?, discord_webhook_enabled=? WHERE id=?")
+           ->execute([$webhook_url ?: null, $webhook_enabled, $me['id']]);
+        $user['discord_webhook_url'] = $webhook_url;
+        $user['discord_webhook_enabled'] = $webhook_enabled;
+        $success = 'Discord webhook settings saved.';
     }
+}
 }
 ?>
 <!DOCTYPE html>
